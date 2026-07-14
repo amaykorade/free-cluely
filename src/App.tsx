@@ -47,6 +47,8 @@ declare global {
       moveWindowRight: () => Promise<void>
       moveWindowUp: () => Promise<void>
       moveWindowDown: () => Promise<void>
+      processScreenshots: () => Promise<void>
+      onCmdEnter: (callback: () => void) => () => void
       quitApp: () => Promise<void>
       
       // LLM Model Management

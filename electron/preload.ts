@@ -33,6 +33,8 @@ interface ElectronAPI {
   analyzeAudioFromBase64: (data: string, mimeType: string) => Promise<{ text: string; timestamp: number }>
   analyzeAudioFile: (path: string) => Promise<{ text: string; timestamp: number }>
   analyzeImageFile: (path: string) => Promise<void>
+  processScreenshots: () => Promise<void>
+  onCmdEnter: (callback: () => void) => () => void
   quitApp: () => Promise<void>
   
   // LLM Model Management
@@ -178,6 +180,12 @@ contextBridge.exposeInMainWorld("electronAPI", {
   analyzeAudioFromBase64: (data: string, mimeType: string) => ipcRenderer.invoke("analyze-audio-base64", data, mimeType),
   analyzeAudioFile: (path: string) => ipcRenderer.invoke("analyze-audio-file", path),
   analyzeImageFile: (path: string) => ipcRenderer.invoke("analyze-image-file", path),
+  processScreenshots: () => ipcRenderer.invoke("process-screenshots"),
+  onCmdEnter: (callback: () => void) => {
+    const subscription = () => callback()
+    ipcRenderer.on("cmd-enter-pressed", subscription)
+    return () => { ipcRenderer.removeListener("cmd-enter-pressed", subscription) }
+  },
   quitApp: () => ipcRenderer.invoke("quit-app"),
   
   // LLM Model Management

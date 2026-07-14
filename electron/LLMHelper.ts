@@ -222,7 +222,12 @@ export class LLMHelper {
           mimeType
         }
       };
-      const prompt = `${this.systemPrompt}\n\nDescribe this audio clip in a short, concise answer. In addition to your main answer, suggest several possible actions or responses the user could take next based on the audio. Do not return a structured JSON object, just answer naturally as you would to a user and be concise.`;
+      const prompt = `You are a real-time AI assistant helping someone in a meeting or interview. Listen to this audio and:
+1. Identify the question or topic being discussed.
+2. Provide a clear, concise answer or talking points the user can say.
+Keep your response short and actionable. Format your response as:
+**Question/Topic:** <what was asked or discussed>
+**Answer:** <what the user should say or do>`;
       const result = await this.model.generateContent([prompt, audioPart]);
       const response = await result.response;
       const text = response.text();

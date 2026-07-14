@@ -113,6 +113,10 @@ export function initializeIpcHandlers(appState: AppState): void {
     }
   });
 
+  ipcMain.handle("process-screenshots", async () => {
+    await appState.processingHelper.processScreenshots()
+  })
+
   ipcMain.handle("quit-app", () => {
     app.quit()
   })

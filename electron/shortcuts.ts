@@ -32,8 +32,11 @@ export class ShortcutsHelper {
       }
     })
 
-    globalShortcut.register("CommandOrControl+Enter", async () => {
-      await this.appState.processingHelper.processScreenshots()
+    globalShortcut.register("CommandOrControl+Enter", () => {
+      const mainWindow = this.appState.getMainWindow()
+      if (mainWindow) {
+        mainWindow.webContents.send("cmd-enter-pressed")
+      }
     })
 
     globalShortcut.register("CommandOrControl+R", () => {

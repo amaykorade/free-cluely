@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Tray, Menu, nativeImage } from "electron"
+import { app, BrowserWindow, Tray, Menu, nativeImage, session } from "electron"
 import { initializeIpcHandlers } from "./ipcHandlers"
 import { WindowHelper } from "./WindowHelper"
 import { ScreenshotHelper } from "./ScreenshotHelper"
@@ -276,6 +276,16 @@ async function initializeApp() {
 
   app.whenReady().then(() => {
     console.log("App is ready")
+
+    // Grant microphone permission to renderer (needed for Web Speech API)
+    session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
+      if (permission === 'media') {
+        callback(true)
+      } else {
+        callback(false)
+      }
+    })
+
     appState.createWindow()
     appState.createTray()
     // Register global shortcuts using ShortcutsHelper
@@ -298,6 +308,8 @@ async function initializeApp() {
 
   app.dock?.hide() // Hide dock icon (optional)
   app.commandLine.appendSwitch("disable-background-timer-throttling")
+  app.commandLine.appendSwitch("enable-speech-dispatcher")
+  app.commandLine.appendSwitch("enable-blink-features", "SpeechAPI")
 }
 
 // Start the application

@@ -35,6 +35,8 @@ const Queue: React.FC<QueueProps> = ({ setView }) => {
   
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [currentModel, setCurrentModel] = useState<{ provider: string; model: string }>({ provider: "gemini", model: "gemini-2.0-flash" })
+  const [isListening, setIsListening] = useState(false)
+  const triggerAnalysisRef = useRef<(() => void) | null>(null)
 
   const barRef = useRef<HTMLDivElement>(null)
 
@@ -203,6 +205,26 @@ const Queue: React.FC<QueueProps> = ({ setView }) => {
     setIsSettingsOpen(!isSettingsOpen)
   }
 
+  const chatBottomRef = useRef<HTMLDivElement>(null)
+
+  // Cmd+Enter: trigger voice analysis if listening, else process screenshots
+  useEffect(() => {
+    const cleanup = window.electronAPI.onCmdEnter(() => {
+      if (isListening) {
+        triggerAnalysisRef.current?.()
+      } else {
+        window.electronAPI.processScreenshots()
+      }
+    })
+    return cleanup
+  }, [isListening])
+
+  const handleAudioResult = (text: string) => {
+    setChatMessages((msgs) => [...msgs, { role: "gemini", text }])
+    setIsChatOpen(true)
+    setTimeout(() => chatBottomRef.current?.scrollIntoView({ behavior: "smooth" }), 100)
+  }
+
   const handleModelChange = (provider: "ollama" | "gemini", model: string) => {
     setCurrentModel({ provider, model })
     // Update chat messages to reflect the model change
@@ -241,6 +263,9 @@ const Queue: React.FC<QueueProps> = ({ setView }) => {
               onTooltipVisibilityChange={handleTooltipVisibilityChange}
               onChatToggle={handleChatToggle}
               onSettingsToggle={handleSettingsToggle}
+              onAudioResult={handleAudioResult}
+              triggerRef={triggerAnalysisRef}
+              onListeningChange={setIsListening}
             />
           </div>
           {/* Conditional Settings Interface */}
@@ -293,6 +318,7 @@ const Queue: React.FC<QueueProps> = ({ setView }) => {
                   </div>
                 </div>
               )}
+              <div ref={chatBottomRef} />
             </div>
             <form
               className="flex gap-2 items-center glass-content"
